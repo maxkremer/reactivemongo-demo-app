@@ -4,4 +4,11 @@ project/target
 target
 tmp
 .history
+.settings
+.target
+.worksheet
+/classpath
+*.class
+.cache
 dist
+*.sc

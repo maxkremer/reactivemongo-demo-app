@@ -33,18 +33,18 @@ object Articles extends Controller with MongoController {
 
   def index = Action { implicit request =>
     Async {
-      
-      val cursor: Cursor[JsObject] = collection.find(Json.obj()).cursor[JsObject]
 
-       val futureArticleList: Future[List[JsObject]] = cursor.toList
-       val futureArticleListJsonArray: Future[JsArray] = futureArticleList.map { articles =>
-        Json.arr(articles.toArray);        
-      }
-      futureArticleListJsonArray.map { articles =>
-        Ok(articles)
-      }
+      //Pass collection empty Json obj to do select * and get the cursor
+      val cursor: Cursor[JsObject] = collection.find(Json.obj()).cursor[JsObject]
+      //convert cursor to future list of jsobject
+      val futureArticleList: Future[List[JsObject]] = cursor.toList
+      //convert list to jsArray so we get an jsArray of JsObjects
+      val futureArticleListJsonArray: Future[JsArray] = futureArticleList.map { aListOfJsonObjs =>  JsArray(aListOfJsonObjs)  }
       
+      //Apply map function to jsArray to turn json into an HTTP OK response with the JSON in the body
+      futureArticleListJsonArray.map { jsArrayArticles =>    Ok(jsArrayArticles)    }
+
     }
   }
-  
+
 }
