@@ -22,14 +22,7 @@ object Articles extends Controller with MongoController {
   // get the collection 'articles'
   val collection = db[JSONCollection]("articles")
   // a GridFS store named 'attachments'
-  //val gridFS = new GridFS(db, "attachments")
-  val gridFS = new GridFS(db)
-
-  // let's build an index on our gridfs chunks collection if none
-  gridFS.ensureIndex().onComplete {
-    case index =>
-      Logger.info(s"Checked index, result is $index")
-  }
+  
 
   def index = Action { implicit request =>
     Async {
