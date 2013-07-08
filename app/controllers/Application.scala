@@ -20,10 +20,13 @@ import models.Article._
 
 object Experience extends Controller with MongoController {
   // get the collection 'experience'
-  val collection = db[JSONCollection]("articles")
+  val collection = db[JSONCollection]("experiences")
   
-  
+  case class Article(title:String, description:String, id:Option[Long])
 
+  implicit val articleWrites = Json.writes[Article] 
+  implicit val articleReads = Json.reads[Article] 
+  
   def listall = Action { implicit request =>
     Async {
 
@@ -40,12 +43,18 @@ object Experience extends Controller with MongoController {
     }
   }
   
-  def addNew = Action { implicit request =>
-	    Async {
-	      val json: Option[JsValue] = request.body.asJson
+  def addNew = Action(parse.json) { implicit request =>
+	  
+	      val jsResult: JsResult[Article] = request.body.validate[Article]
+	      jsResult.fold(
+	          valid ={res => AsyncResult{
+	            collection.insert(res).map{ _ => Ok(Json.obj("status" -> "new record added to db")) }}
+	          },
+	          invalid={e => BadRequest(e.toString)}
+	      )
 	      
-	      collection.insert(json).map{ _ => Redirect(routes.Experience.listall) }
-	    }
+	      
+	    
     }
 
 }
