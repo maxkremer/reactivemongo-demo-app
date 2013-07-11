@@ -15,6 +15,7 @@ import reactivemongo.bson._
 import reactivemongo.api.Cursor
 import play.api.libs.json._
 import play.modules.reactivemongo.json.collection.JSONCollection
+import play.modules.reactivemongo.json.BSONFormats._
 import models.Article
 import models.Article._
 
@@ -53,6 +54,25 @@ object Experience extends Controller with MongoController {
         }
       },
       invalid = { e => BadRequest(e.toString) })
+  }
+
+  def fetch(id: String) = Action { implicit request =>
+    Async {
+      
+      val objectId = BSONObjectID(id)
+      
+      val cursor = collection.find(BSONDocument("_id" -> objectId)).cursor[JsObject]
+      
+     // val cursor: Cursor[JsObject] = collection.find(Json.obj("_id" -> Json.obj("$oid" -> id))).cursor[JsObject]
+
+      for {
+        maybeArticle <- cursor.headOption
+      } yield {
+        maybeArticle.map {
+          article => Ok(article)
+        }.getOrElse(NotFound)
+      }
+    }
 
   }
 
